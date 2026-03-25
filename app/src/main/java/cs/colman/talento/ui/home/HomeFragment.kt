@@ -116,16 +116,16 @@ class HomeFragment : Fragment(), OnMapReadyCallback, MapLibreMap.OnCameraMoveLis
             when (result) {
                 is NetworkResult.Loading -> {
                     if (!isFetchingBusinesses) {
-                        LoadingUtil.showLoading(requireContext(), true)
+                        binding.mapProgressIndicator.visibility = View.VISIBLE
                         isFetchingBusinesses = true
                     }
                 }
                 is NetworkResult.Success -> {
-                    LoadingUtil.showLoading(requireContext(), false)
+                    binding.mapProgressIndicator.visibility = View.GONE
                     isFetchingBusinesses = false
                 }
                 is NetworkResult.Error -> {
-                    LoadingUtil.showLoading(requireContext(), false)
+                    binding.mapProgressIndicator.visibility = View.GONE
                     isFetchingBusinesses = false
                     showSnackbar(binding.root, result.message, SnackbarType.ERROR)
                 }
@@ -179,7 +179,6 @@ class HomeFragment : Fragment(), OnMapReadyCallback, MapLibreMap.OnCameraMoveLis
                 }
 
                 setupInfoWindows()
-
                 LoadingUtil.showLoading(requireContext(), false)
             }
         }
@@ -257,6 +256,18 @@ class HomeFragment : Fragment(), OnMapReadyCallback, MapLibreMap.OnCameraMoveLis
         map.addOnCameraMoveListener(this)
         map.addOnCameraIdleListener(this)
         map.onInfoWindowClickListener = this
+        map.setOnMarkerClickListener { marker ->
+            map.selectedMarkers.forEach { map.deselectMarker(it) }
+
+            map.selectMarker(marker)
+
+            binding.mapView.post {
+                if (marker.isInfoWindowShown) {
+                    marker.infoWindow?.update()
+                }
+            }
+            true
+        }
     }
 
     private fun setupInfoWindows() {
@@ -273,8 +284,18 @@ class HomeFragment : Fragment(), OnMapReadyCallback, MapLibreMap.OnCameraMoveLis
             tvBusinessName.text = businessWithOwner.business.businessName
             tvProfession.text = businessWithOwner.business.profession
             tvOwnerName.text = businessWithOwner.owner.fullName
+
+            val widthSpec = View.MeasureSpec.makeMeasureSpec(binding.mapView.width, View.MeasureSpec.AT_MOST)
+            val heightSpec = View.MeasureSpec.makeMeasureSpec(binding.mapView.height, View.MeasureSpec.AT_MOST)
+
+            view.measure(widthSpec, heightSpec)
+            view.layout(0, 0, view.measuredWidth, view.measuredHeight)
+
+            // Return the measured view
+            view
         }
     }
+
 
     override fun onInfoWindowClick(marker: Marker): Boolean {
         if (isFetchingBusinesses) return true

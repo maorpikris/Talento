@@ -9,6 +9,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/mapProgressIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:indicatorColor="?attr/colorPrimary"
+        app:trackColor="#00FFFFFF" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnSearch"
         android:layout_width="wrap_content"
